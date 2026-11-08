@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>게임 개발자 유형 테스트</title>
+<meta name="description" content="12문항으로 알아보는 나의 게임 개발자 유형. 16가지 유형 중 당신은?">
+<meta property="og:title" content="게임 개발자 유형 테스트">
+<meta property="og:description" content="게임 만들 때 나는 어떤 사람일까? 12문항으로 알아보는 16가지 개발자 유형">
+<meta property="og:type" content="website">
+<style>
+  :root {
+    --bg: #070708;
+    --bg-2: #121214;
+    --card: #141416;
+    --card-2: #1b1b1e;
+    --line: #2a2a2f;
+    --text: #f2f2f2;
+    --muted: #9a9aa3;
+    --accent: #e8362e;
+    --accent-2: #ff6b63;
+    --accent-soft: rgba(232,54,46,.14);
+    --accent-line: rgba(232,54,46,.35);
+    --warn: #ffb86b;
+    --good: #6fe3b4;
+    --radius: 18px;
+    --shadow: 0 10px 30px rgba(0,0,0,.55);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: "Pretendard", -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", "Segoe UI", Roboto, sans-serif;
+    background: radial-gradient(1200px 600px at 20% -10%, rgba(232,54,46,.18) 0%, var(--bg) 55%) fixed, var(--bg);
+    color: var(--text);
+    min-height: 100dvh;
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.55;
+    word-break: keep-all;
+  }
+  a { color: var(--accent-2); }
+  button { font-family: inherit; }
+
+  .wrap {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 24px 16px calc(32px + env(safe-area-inset-bottom));
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+  }
+  header.top {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 20px; font-size: 13px; color: var(--muted);
+  }
+  header.top .brand { font-weight: 700; letter-spacing: .02em; color: var(--accent-2); }
+
+  .screen { display: none; flex: 1; flex-direction: column; animation: fade .35s ease; }
+  .screen.active { display: flex; }
+  @keyframes fade { from { opacity: 0; transform: translateY(8px);} to { opacity: 1; transform: none;} }
+
+  .card {
+    background: linear-gradient(180deg, var(--card-2), var(--card));
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 24px 20px;
+    box-shadow: var(--shadow);
+  }
+
+  /* ---------- Intro ---------- */
+  .intro { text-align: center; justify-content: center; }
+  .intro .emoji { font-size: 56px; margin-bottom: 8px; }
+  .intro h1 { font-size: 30px; margin: 8px 0 10px; letter-spacing: -.02em; line-height: 1.25; }
+  .intro p.lead { color: var(--muted); margin: 0 0 24px; font-size: 15px; }
+  .pill-row { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-bottom: 28px; }
+  .pill { font-size: 12px; padding: 6px 12px; border-radius: 999px; background: var(--accent-soft); color: var(--accent-2); border: 1px solid var(--accent-line); }
+
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    width: 100%; padding: 16px 20px; border-radius: 14px; border: 0;
+    font-size: 16px; font-weight: 700; cursor: pointer; transition: transform .08s ease, filter .15s ease;
+  }
+  .btn:active { transform: scale(.985); }
+  .btn.primary { background: linear-gradient(135deg, #c8231c, var(--accent) 60%, var(--accent-2)); color: #fff; box-shadow: 0 6px 20px rgba(232,54,46,.3); }
+  .btn.primary:hover { filter: brightness(1.06); }
+  .btn.ghost { background: transparent; color: var(--accent-2); border: 1px solid var(--line); }
+  .btn.ghost:hover { background: var(--accent-soft); }
+  .btn-row { display: flex; flex-direction: column; gap: 10px; margin-top: 12px; }
+  @media (min-width: 520px) { .btn-row { flex-direction: row; } }
+
+  /* ---------- Quiz ---------- */
+  .progress { height: 6px; background: var(--bg-2); border-radius: 999px; overflow: hidden; border: 1px solid var(--line); margin-bottom: 18px; }
+  .progress > i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--accent), var(--accent-2)); transition: width .3s ease; }
+  .q-meta { display: flex; justify-content: space-between; font-size: 13px; color: var(--muted); margin-bottom: 10px; }
+  .q-scene { font-size: 13px; color: var(--accent-2); font-weight: 600; margin-bottom: 6px; }
+  .q-text { font-size: 20px; font-weight: 700; margin: 0 0 22px; line-height: 1.4; letter-spacing: -.01em; }
+  .choices { display: grid; gap: 12px; }
+  .choice {
+    text-align: left; width: 100%; padding: 18px 18px 18px 54px; position: relative;
+    background: var(--bg-2); border: 1px solid var(--line); border-radius: 14px; color: var(--text);
+    font-size: 15.5px; line-height: 1.5; cursor: pointer; transition: border-color .15s, background .15s, transform .08s;
+  }
+  .choice::before {
+    content: attr(data-label); position: absolute; left: 16px; top: 50%; transform: translateY(-50%);
+    width: 28px; height: 28px; border-radius: 8px; display: grid; place-items: center;
+    background: var(--accent-soft); color: var(--accent-2); font-weight: 800; font-size: 13px;
+  }
+  .choice:hover { border-color: var(--accent); background: #1a1a1d; }
+  .choice:active { transform: scale(.99); }
+  .choice.picked { border-color: var(--accent); background: var(--accent-soft); }
+  .q-nav { display: flex; justify-content: space-between; margin-top: 18px; }
+  .link-btn { background: none; border: 0; color: var(--muted); font-size: 14px; cursor: pointer; padding: 8px 4px; }
+  .link-btn:hover { color: var(--accent-2); }
+
+  /* ---------- Result ---------- */
+  .result-head { text-align: center; padding: 28px 20px 22px; }
+  .result-head .kicker { font-size: 13px; color: var(--muted); letter-spacing: .08em; }
+  .result-head .emoji { font-size: 64px; line-height: 1; margin: 10px 0 8px; }
+  .result-head .mbti { display: inline-block; font-size: 13px; font-weight: 800; letter-spacing: .14em; color: var(--accent-2); background: var(--accent-soft); border: 1px solid var(--accent-line); padding: 4px 10px; border-radius: 999px; margin-bottom: 10px; }
+  .result-head h2 { font-size: 30px; margin: 4px 0 8px; letter-spacing: -.02em; }
+  .result-head .catch { color: var(--muted); font-size: 15px; margin: 0; }
+  .tags { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 16px; }
+  .tag { font-size: 13px; padding: 7px 12px; border-radius: 10px; background: var(--bg-2); border: 1px solid var(--line); color: var(--text); }
+
+  .section { margin-top: 14px; }
+  .section h3 { font-size: 14px; color: var(--accent-2); margin: 0 0 10px; letter-spacing: .02em; }
+  .section ul { margin: 0; padding-left: 0; list-style: none; display: grid; gap: 8px; }
+  .section li { padding-left: 24px; position: relative; font-size: 15px; }
+  .section li::before { content: "▸"; position: absolute; left: 6px; color: var(--accent); }
+  .two-col { display: grid; gap: 14px; }
+  @media (min-width: 520px) { .two-col { grid-template-columns: 1fr 1fr; } }
+  .mini { padding: 16px; }
+  .mini .label { font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+  .mini .val { font-size: 15px; }
+  .mini.good .label { color: var(--good); }
+  .mini.warn .label { color: var(--warn); }
+  .mate { display: flex; align-items: center; gap: 12px; }
+  .mate .em { font-size: 28px; }
+  .mate .nm { font-weight: 700; }
+  .mate .mb { font-size: 12px; color: var(--muted); letter-spacing: .08em; }
+  .role { font-size: 15px; }
+
+  .toast {
+    position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom)); transform: translateX(-50%) translateY(20px);
+    background: #26262b; color: var(--text); padding: 10px 16px; border-radius: 10px; font-size: 14px;
+    opacity: 0; pointer-events: none; transition: .25s; border: 1px solid var(--line); box-shadow: var(--shadow);
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  footer { text-align: center; color: var(--muted); font-size: 12px; margin-top: 28px; }
+  footer .credit { display: inline-block; margin-top: 8px; font-size: 11px; color: #6f6f78; letter-spacing: .02em; }
+
+  /* ---------- Cat bubble FX ---------- */
+  .fx-layer { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 999; }
+  .cat-bubble {
+    position: absolute; left: 0; top: 0;
+    width: var(--size); height: var(--size);
+    filter: drop-shadow(0 4px 10px rgba(232,54,46,.35));
+    will-change: transform, opacity;
+    animation: cat-pop var(--dur) cubic-bezier(.2,.8,.3,1) forwards;
+    transform: translate(-50%,-50%) scale(0);
+  }
+  .cat-bubble svg { width: 100%; height: 100%; display: block; overflow: visible; }
+  @keyframes cat-pop {
+    0%   { transform: translate(-50%,-50%) translate(0,0) scale(0) rotate(0deg); opacity: 0; }
+    18%  { transform: translate(-50%,-50%) translate(calc(var(--dx)*.3), calc(var(--dy)*.3)) scale(1.15) rotate(calc(var(--rot)*.4)); opacity: 1; }
+    75%  { opacity: 1; }
+    100% { transform: translate(-50%,-50%) translate(var(--dx), var(--dy)) scale(.75) rotate(var(--rot)); opacity: 0; }
+  }
+  @media (prefers-reduced-motion: reduce) { .cat-bubble { display: none; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <span class="brand">DEV TYPE</span>
+    <span>게임 개발자 유형 테스트</span>
+  </header>
+
+  <!-- ========== INTRO ========== -->
+  <section id="intro" class="screen intro active">
+    <div class="card">
+      <div class="emoji">🎮</div>
+      <h1>게임 만들 때,<br>나는 어떤 사람일까?</h1>
+      <p class="lead">기획 회의부터 마감 3일 전까지.<br>12개의 상황에서 당신의 선택을 알려주세요.</p>
+      <div class="pill-row">
+        <span class="pill">12문항</span>
+        <span class="pill">약 2분</span>
+        <span class="pill">16가지 유형</span>
+      </div>
+      <button class="btn primary" id="startBtn">테스트 시작하기</button>
+    </div>
+    <footer>결과는 재미로만 봐주세요. 모든 유형이 팀에 필요합니다.<br><span class="credit">Made by 황지영 · Exciting Studio 21기</span></footer>
+  </section>
+
+  <!-- ========== QUIZ ========== -->
+  <section id="quiz" class="screen">
+    <div class="progress"><i id="bar"></i></div>
+    <div class="card">
+      <div class="q-meta"><span id="qNum">Q1</span><span id="qTotal">/ 12</span></div>
+      <div class="q-scene" id="qScene"></div>
+      <p class="q-text" id="qText"></p>
+      <div class="choices" id="choices"></div>
+      <div class="q-nav">
+        <button class="link-btn" id="prevBtn">← 이전</button>
+        <button class="link-btn" id="restartBtn">처음으로</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== RESULT ========== -->
+  <section id="result" class="screen">
+    <div class="card result-head">
+      <div class="kicker">당신의 게임 개발자 유형은</div>
+      <div class="emoji" id="rEmoji"></div>
+      <div class="mbti" id="rMbti"></div>
+      <h2 id="rName"></h2>
+      <p class="catch" id="rCatch"></p>
+      <div class="tags" id="rTags"></div>
+    </div>
+
+    <div class="card section">
+      <h3>개발할 때 이런 모습</h3>
+      <ul id="rTraits"></ul>
+    </div>
+
+    <div class="two-col section">
+      <div class="card mini good"><div class="label">강점</div><div class="val" id="rStrength"></div></div>
+      <div class="card mini warn"><div class="label">조심할 점</div><div class="val" id="rCaution"></div></div>
+    </div>
+
+    <div class="two-col section">
+      <div class="card mini"><div class="label">찰떡 팀원</div><div class="mate" id="rBuddy"></div></div>
+      <div class="card mini"><div class="label">티격태격 팀원</div><div class="mate" id="rClash"></div></div>
+    </div>
+
+    <div class="card section">
+      <h3>어울리는 포지션</h3>
+      <div class="role" id="rRole"></div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn primary" id="shareBtn">결과 공유하기</button>
+      <button class="btn ghost" id="againBtn">다시 하기</button>
+    </div>
+    <footer>MBTI 16유형을 게임 개발 상황에 빗댄 재미용 테스트입니다.</footer>
+  </section>
+</div>
+<div class="toast" id="toast"></div>
+<div class="fx-layer" id="fx"></div>
+
+<script>
+/* =========================================================
+   DATA — 문항 (축당 3개, A/B 선택)
+   axis: "EI" | "SN" | "TF" | "JP"
+   a/b: { text, v } v = 해당 축에서 더해지는 글자
+   ========================================================= */
+const QUESTIONS = [
+  { axis:"EI", scene:"게임 개발 첫날", text:"팀이 처음 모였다. 어떻게 시작할까?",
+    a:{ text:"일단 다 모여서 아이디어부터 쏟아내자. 떠들다 보면 나온다.", v:"E" },
+    b:{ text:"각자 30분만 생각 정리하고 모이자. 조용히 메모부터.", v:"I" } },
+  { axis:"EI", scene:"막히는 버그", text:"두 시간째 안 풀리는 버그를 만났다.",
+    a:{ text:"옆자리에 \"이거 좀 봐줄래?\" 하고 소리 내서 설명하다 보면 풀린다.", v:"E" },
+    b:{ text:"헤드폰 끼고 혼자 로그를 뒤진다. 풀리면 그때 말한다.", v:"I" } },
+  { axis:"EI", scene:"데모 시연 날", text:"사람들 앞에서 프로토타입을 보여줘야 한다.",
+    a:{ text:"내가 직접 시연하면서 리액션 받는 게 제일 재밌다.", v:"E" },
+    b:{ text:"프로토타입 영상을 틀어놓고 사람들의 반응을 구경한다.", v:"I" } },
+
+  { axis:"SN", scene:"새 기능 회의", text:"새로운 전투 시스템을 넣기로 했다.",
+    a:{ text:"레퍼런스 게임들이 어떻게 했는지부터 뜯어보자.", v:"S" },
+    b:{ text:"아무도 안 해본 방식 없을까? 일단 상상부터 해보자.", v:"N" } },
+  { axis:"SN", scene:"기획서 수령", text:"기획서가 넘어왔다. 어떤 기획서가 마음 편한가?",
+    a:{ text:"수치·조건·예외 케이스가 빠짐없이 적혀 있어야 안심된다.", v:"S" },
+    b:{ text:"방향성과 의도만 잡혀 있으면 된다. 나머지는 만들면서.", v:"N" } },
+  { axis:"SN", scene:"플레이테스트 피드백", text:"어떤 피드백이 더 반가운가?",
+    a:{ text:"\"3스테이지 두 번째 점프에서 자꾸 떨어져요\" 같은 구체적인 지적.", v:"S" },
+    b:{ text:"\"뭔가 전체적으로 답답해요\" 같은 인상. 원인 추론하는 게 재밌다.", v:"N" } },
+
+  { axis:"TF", scene:"팀원의 밤샘 결과물", text:"팀원이 밤새 만든 기능인데, 솔직히 재미가 없다.",
+    a:{ text:"어디가 왜 안 되는지 바로 말해준다. 그게 서로에게 이득이다.", v:"T" },
+    b:{ text:"고생한 부분부터 짚고, 개선점은 질문 형태로 꺼낸다.", v:"F" } },
+  { axis:"TF", scene:"밸런스 조정", text:"이 무기, 너무 센 것 같다는 의견이 나왔다.",
+    a:{ text:"승률 데이터와 수치가 답이다. 감은 참고만.", v:"T" },
+    b:{ text:"수치가 맞아도 플레이어가 억울하다고 느끼면 고쳐야 한다.", v:"F" } },
+  { axis:"TF", scene:"코드 리뷰", text:"내 코드에 \"이 구조 비효율적인데요\"라는 코멘트가 달렸다.",
+    a:{ text:"맞는 말이면 환영. 감정은 별개 문제다.", v:"T" },
+    b:{ text:"맞는 말이어도 표현 방식에 따라 하루 기분이 갈린다.", v:"F" } },
+
+  { axis:"JP", scene:"프로젝트 시작", text:"새 프로젝트 첫날, 가장 먼저 하는 일은?",
+    a:{ text:"마일스톤과 태스크 보드부터 세팅. 일정 없으면 불안하다.", v:"J" },
+    b:{ text:"일단 프로토타입부터 돌려본다. 계획은 그 다음.", v:"P" } },
+  { axis:"JP", scene:"마감 3일 전", text:"기획이 갑자기 바뀌었다. 더 재밌어 보이긴 한다.",
+    a:{ text:"\"이건 다음 버전으로.\" 지금 범위를 지키는 게 우선이다.", v:"J" },
+    b:{ text:"\"오, 그게 더 재밌겠다\" 하고 바로 갈아엎는다.", v:"P" } },
+  { axis:"JP", scene:"평소 작업 스타일", text:"나와 더 가까운 쪽은?",
+    a:{ text:"오늘 할 일 목록을 다 지우고 퇴근해야 개운하다.", v:"J" },
+    b:{ text:"흥미로운 걸 파다 시간 가는 줄 모른다. 마감 앞에서 폭발한다.", v:"P" } },
+];
+
+/* =========================================================
+   DATA — 16유형 결과
+   ========================================================= */
+const TYPES = {
+  INTJ: { emoji:"🏗️", name:"엔진 설계자", catch:"기능보다 구조가 먼저. 1년 뒤 확장성을 보는 사람.",
+    tags:["의존성 그래프 애호가","리팩토링은 취미","\"그건 설계가 틀린 거야\"","말수 적고 자기주장 강함"],
+    traits:["코드 짜기 전에 모듈 간 의존 관계부터 그려본다.","\"지금 돌아가게\"보다 \"나중에 안 고치게\"를 택한다.","남이 짠 구조에 문제가 보이면 밤에 잠이 안 온다."],
+    strength:"흔들리지 않는 아키텍처. 프로젝트가 커져도 무너지지 않는 뼈대를 만든다.",
+    caution:"설계에 시간을 쓰다 플레이 가능한 빌드가 늦어질 수 있다. 가끔은 더럽게라도 돌려보자.",
+    buddy:"ENFP", clash:"ESFP",
+    role:"엔진 / 코어 시스템 프로그래머, 테크니컬 디렉터" },
+  INTP: { emoji:"🔬", name:"수석 왜 연구원", catch:"\"왜 되는지\"를 모르면 쓰지 않는 사람.",
+    tags:["기능 만들다 논문 읽는 중","프로토타입 12개","완성보다 이해","토끼굴 상주"],
+    traits:["라이브러리를 쓰기 전에 내부 구현부터 열어본다.","\"이게 왜 돌아가지?\"가 \"이게 왜 안 돌아가지?\"보다 더 신경 쓰인다.","재밌는 문제를 만나면 일정은 잠시 잊는다."],
+    strength:"남들이 못 푸는 문제를 푼다. 근본 원인을 찾아내는 집요함.",
+    caution:"이해가 끝나면 흥미도 끝나서 마무리가 약해질 수 있다. 마지막 10%를 챙기자.",
+    buddy:"ENTJ", clash:"ESFJ",
+    role:"R&D / 렌더링 / 물리 프로그래머, 기술 프로토타이핑" },
+  ENTJ: { emoji:"🚀", name:"출시 지휘관", catch:"\"이번 주 안에 됩니다\"를 현실로 만드는 사람.",
+    tags:["마일스톤 보드 지배자","회의 15분 컷","우선순위 기계","출시 전날 가장 침착"],
+    traits:["프로젝트를 보면 먼저 일정과 병목부터 보인다.","\"그래서 결론이 뭔데?\"를 입에 달고 산다.","팀이 흔들릴 때 방향을 정해주는 쪽이다."],
+    strength:"추진력과 결단. 끝나지 않을 것 같던 프로젝트를 출시까지 끌고 간다.",
+    caution:"속도를 올리다 팀원의 페이스를 놓칠 수 있다. 가끔은 멈춰서 물어보자.",
+    buddy:"INTP", clash:"INFP",
+    role:"리드 프로그래머, PM / 프로듀서, 테크 리드" },
+  ENTP: { emoji:"⚡", name:"장르 파괴 공학자", catch:"\"그 장르 공식 왜 따라야 해?\"",
+    tags:["실험작 공장","토론이 곧 설계","뒤집기 전문","규칙은 깨라고 있는 것"],
+    traits:["기존 장르 문법을 보면 비틀고 싶어진다.","회의에서 반대 의견을 일부러 던져 아이디어를 시험한다.","프로토타입은 많은데 폴더 이름이 전부 test_final_v3다."],
+    strength:"아무도 생각 못 한 메카닉. 게임의 차별점이 여기서 나온다.",
+    caution:"새 아이디어가 기존 작업을 덮어버릴 수 있다. 하나는 끝까지 밀어보자.",
+    buddy:"INFJ", clash:"ISTJ",
+    role:"게임플레이 프로그래머, 시스템 기획, 프로토타이퍼" },
+
+  INFJ: { emoji:"🌌", name:"세계관 건축가", catch:"모든 시스템은 하나의 주제로 수렴해야 한다.",
+    tags:["설정집 300페이지","의미 없는 기능 거부","조용한 통찰","엔딩부터 쓰는 사람"],
+    traits:["\"이 게임이 결국 무슨 이야기를 하고 싶은 거지?\"를 가장 먼저 묻는다.","플레이어가 안 갈 지역의 역사 연표까지 짜 놓는다.","회의에서 말은 적지만 한마디가 방향을 바꾼다."],
+    strength:"일관성 있는 세계와 메시지. 게임에 \"기억에 남는 이유\"를 만든다.",
+    caution:"이상이 높아 타협이 어려울 수 있다. 완벽한 세계보다 플레이되는 세계가 먼저다.",
+    buddy:"ENTP", clash:"ESTP",
+    role:"내러티브 디자이너, 월드 빌딩, 콘텐츠 디렉터" },
+  INFP: { emoji:"🎻", name:"눈물 연출 감독", catch:"플레이어가 이 장면에서 뭘 느낄지가 전부.",
+    tags:["BGM 타이밍 집착","대사 한 줄에 밤샘","진정성 탐지기","조용한 디테일 장인"],
+    traits:["컷신 페이드아웃 길이를 0.2초 단위로 조정한다.","기능보다 \"이 순간의 감정\"이 먼저다.","자기 작업을 보여주기 전까지 오래 다듬는다."],
+    strength:"감정이 남는 순간을 만든다. 플레이어가 울고 웃는 지점은 여기서 나온다.",
+    caution:"자기 기준이 높아 공개를 미루기 쉽다. 80%에서 한 번 보여주자.",
+    buddy:"ENFJ", clash:"ENTJ",
+    role:"연출 / 시네마틱, 사운드 디자인, 내러티브 작가" },
+  ENFJ: { emoji:"🤝", name:"분위기 총괄 매니저", catch:"팀원 컨디션을 먼저 보는 사람.",
+    tags:["회의 흐름 정리 담당","갈등 접착제","\"괜찮아요?\" 전문","동기부여 발전기"],
+    traits:["누가 지쳤는지 먼저 알아채고 일을 나눈다.","회의가 산으로 가면 자연스럽게 방향을 잡아준다.","팀원 성과를 자기 일처럼 기뻐한다."],
+    strength:"팀을 하나로 묶는다. 위기 때 사람들이 떠나지 않는 이유.",
+    caution:"남 챙기다 자기 작업이 밀릴 수 있다. 내 태스크도 보드에 올리자.",
+    buddy:"INFP", clash:"ISTP",
+    role:"프로젝트 매니저, 스크럼 마스터, 팀 리드" },
+  ENFP: { emoji:"🎆", name:"기획 폭주 기관차", catch:"10개 던지면 2개가 살아남고, 그게 게임의 핵심이 된다.",
+    tags:["브레인스토밍 주인공","\"이것도 넣자!\"","열정 과충전","새 프로젝트 중독"],
+    traits:["회의 중에 화이트보드가 가장 빨리 차는 사람.","남의 아이디어에 살을 붙여 더 크게 만든다.","시작은 100개, 끝은… 팀원이 챙겨준다."],
+    strength:"폭발적인 발상과 에너지. 팀이 막혔을 때 출구를 만든다.",
+    caution:"흥미가 옮겨가면 진행 중인 작업이 식는다. 한 가지를 출시까지 가져가보자.",
+    buddy:"INTJ", clash:"ISTJ",
+    role:"게임 기획 / 콘셉트 디자인, 프로토타이퍼, 커뮤니티" },
+
+  ISTJ: { emoji:"📐", name:"규격 수호자", catch:"네이밍 컨벤션은 지키라고 있는 것.",
+    tags:["린트 통과 필수","커밋 메시지 교과서","레거시도 끝까지 읽음","예외 케이스 수집가"],
+    traits:["변수 이름 하나 때문에 PR을 돌려보낸 적이 있다.","문서 없는 코드는 없는 코드다.","\"저번에도 그렇게 해서 터졌잖아\"를 기억하는 팀의 기록 장치."],
+    strength:"신뢰도. 이 사람이 만든 건 안 터진다.",
+    caution:"규칙이 목적이 되면 속도가 떨어진다. 프로토타입 단계에선 조금 풀어주자.",
+    buddy:"ESFP", clash:"ENTP",
+    role:"클라이언트 / 서버 프로그래머, 빌드·QA 엔지니어" },
+  ISFJ: { emoji:"🗂️", name:"데이터와 설계에 미친놈", catch:"데이터 테이블에 빈칸이 있으면 잠이 안 오는 사람.",
+    tags:["설계 문서 완성형","테이블 정합성 수호","\"그 값 어디서 나왔어요?\"","조용히 전부 정리해 둠"],
+    traits:["새 기능이 들어오면 기획서보다 데이터 구조도부터 그린다.","아이템 테이블에 누락된 칸을 밤에 조용히 채워 놓는다.","\"대충 하드코딩\"이라는 말을 들으면 조용히 테이블을 하나 더 만든다."],
+    strength:"빈틈없는 데이터와 설계 문서. 나중에 들어온 사람도 길을 잃지 않는다.",
+    caution:"정리가 끝나야 시작하려다 첫 빌드가 늦어질 수 있다. 70%에서 한 번 돌려보자.",
+    buddy:"ESTP", clash:"ENTP",
+    role:"데이터 기획 / 테이블 설계, 시스템 기획, 툴 프로그래머" },
+  ESTJ: { emoji:"📊", name:"밸런스 관리자", catch:"스프레드시트가 진짜 게임이다.",
+    tags:["수치 근거 요구","데미지 공식 설계자","프로세스 수호","\"데이터 보고 얘기하자\""],
+    traits:["밸런스 시트에 로그 곡선을 넣고 흐뭇해한다.","\"느낌상\"이라는 말을 들으면 표정이 굳는다.","회의 끝에 담당자를 반드시 정한다."],
+    strength:"체계와 실행력. 감으로 하던 일을 측정 가능하게 만든다.",
+    caution:"수치가 맞아도 \"재미\"는 다를 수 있다. 플레이 느낌에도 자리를 주자.",
+    buddy:"ISFP", clash:"INFP",
+    role:"시스템 / 밸런스 기획, 라이브 운영, PM" },
+  ESFJ: { emoji:"🧭", name:"플레이어 길잡이", catch:"첫 10분 경험에 집착하는 사람.",
+    tags:["후기 전부 읽음","튜토리얼 장인","접근성 챙김","\"유저가 헷갈려요\""],
+    traits:["플레이테스트 때 테스터 표정을 게임보다 더 본다.","튜토리얼 문구를 다섯 번 고쳐 쓴다.","커뮤니티 반응을 가장 먼저 팀에 전한다."],
+    strength:"플레이어 공감. 잘 만든 게임을 \"친절한 게임\"으로 만든다.",
+    caution:"모든 피드백을 다 반영하려다 방향을 잃을 수 있다. 우선순위를 두자.",
+    buddy:"ISTP", clash:"INTP",
+    role:"UX / UI 기획, 레벨 디자인(온보딩), 커뮤니티 매니저" },
+
+  ISTP: { emoji:"🛠️", name:"최적화 정비공", catch:"60프레임 아래로 떨어지면 못 참는다.",
+    tags:["프로파일러가 주무기","말보다 커밋","냉정한 진단","핫픽스 전문"],
+    traits:["문제를 보면 말 없이 디버거부터 붙인다.","\"그거 캐시 미스일걸\" 하고 실제로 맞춘다.","회의보다 터미널이 편하다."],
+    strength:"손에 잡히는 문제 해결. 터진 걸 가장 빨리 살려낸다.",
+    caution:"혼자 해결하는 데 익숙해 공유가 늦을 수 있다. 원인은 문서로 남기자.",
+    buddy:"ESFJ", clash:"ENFJ",
+    role:"엔진 최적화, 그래픽스 / 플랫폼 프로그래머, 디버깅 전담" },
+  ISFP: { emoji:"🎨", name:"비주얼 조명 감독", catch:"셰이더 한 줄 고치려고 빌드 10번.",
+    tags:["라이팅 각도 집착","스크린샷은 늘 예쁨","감각으로 판단","조용한 미학자"],
+    traits:["기능보다 화면이 예쁜지가 먼저 눈에 들어온다.","이펙트 색 하나로 오후를 보낸다.","말로 설명하기보다 그냥 만들어서 보여준다."],
+    strength:"눈에 남는 비주얼. 같은 게임도 이 사람 손을 거치면 때깔이 달라진다.",
+    caution:"미적 기준에 시간이 녹을 수 있다. \"지금 단계에서 필요한 퀄리티\"를 정하자.",
+    buddy:"ESTJ", clash:"ENTJ",
+    role:"테크니컬 아티스트, VFX / 셰이더, UI 아트" },
+  ESTP: { emoji:"🕹️", name:"손맛 테스터", catch:"\"그래서 지금 재밌냐?\"",
+    tags:["만들자마자 플레이","점프 높이 0.1 조정","타격감 사냥꾼","즉흥 플레이테스트"],
+    traits:["기획서보다 마우스를 먼저 잡는다.","\"일단 돌려보자\"가 입버릇이다.","재미없으면 아무리 잘 만든 시스템도 가차 없다."],
+    strength:"게임필(feel)에 대한 본능. 조작감과 타격감은 이 사람이 책임진다.",
+    caution:"즉흥적으로 뜯어고치다 구조가 꼬일 수 있다. 바꾼 건 기록하자.",
+    buddy:"ISFJ", clash:"INFJ",
+    role:"게임플레이 / 컴뱃 프로그래머, 레벨 디자이너" },
+  ESFP: { emoji:"🎉", name:"하이라이트 메이커", catch:"다 같이 환호할 순간을 설계하는 사람.",
+    tags:["데모 시연 담당","이벤트 연출 장인","팀 분위기 메이커","\"여기서 폭죽 터뜨리자\""],
+    traits:["발표 자리에선 항상 이 사람이 마이크를 잡는다.","보스 격파 연출, 레벨업 이펙트에 진심이다.","팀이 처져 있으면 간식을 들고 나타난다."],
+    strength:"에너지와 쇼맨십. 게임을 \"보여지는 것\"으로 완성한다.",
+    caution:"화려함에 집중하다 기본 흐름이 밀릴 수 있다. 연출 전에 코어 루프부터.",
+    buddy:"ISTJ", clash:"INTJ",
+    role:"이벤트 / 연출 기획, 데모·쇼케이스 담당, 라이브 콘텐츠" },
+};
+
+/* =========================================================
+   APP
+   ========================================================= */
+const $ = (id) => document.getElementById(id);
+const screens = { intro: $("intro"), quiz: $("quiz"), result: $("result") };
+let idx = 0;
+let answers = []; // 선택한 글자(E/I/S/N/T/F/J/P)
+
+function show(name) {
+  Object.values(screens).forEach(s => s.classList.remove("active"));
+  screens[name].classList.add("active");
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function renderQuestion() {
+  const q = QUESTIONS[idx];
+  $("bar").style.width = ((idx) / QUESTIONS.length * 100) + "%";
+  $("qNum").textContent = "Q" + (idx + 1);
+  $("qTotal").textContent = "/ " + QUESTIONS.length;
+  $("qScene").textContent = "# " + q.scene;
+  $("qText").textContent = q.text;
+  const box = $("choices");
+  box.innerHTML = "";
+  [["A", q.a], ["B", q.b]].forEach(([label, opt]) => {
+    const b = document.createElement("button");
+    b.className = "choice" + (answers[idx] === opt.v ? " picked" : "");
+    b.dataset.label = label;
+    b.textContent = opt.text;
+    b.onclick = () => pick(opt.v);
+    box.appendChild(b);
+  });
+  $("prevBtn").style.visibility = idx === 0 ? "hidden" : "visible";
+}
+
+function pick(v) {
+  answers[idx] = v;
+  renderQuestion(); // 선택 표시
+  setTimeout(() => {
+    if (idx < QUESTIONS.length - 1) { idx++; renderQuestion(); }
+    else finish();
+  }, 180);
+}
+
+function computeType() {
+  const score = { E:0,I:0,S:0,N:0,T:0,F:0,J:0,P:0 };
+  answers.forEach(v => score[v]++);
+  return (score.E >= score.I ? "E" : "I")
+       + (score.S >= score.N ? "S" : "N")
+       + (score.T >= score.F ? "T" : "F")
+       + (score.J >= score.P ? "J" : "P");
+}
+
+// 미리보기/샌드박스(about:srcdoc 등)에서는 history API가 막혀 있어 실패해도 무시
+function setUrl(query) {
+  try { history.replaceState(null, "", location.pathname + query); } catch (e) { /* ignore */ }
+}
+
+function finish() {
+  const t = computeType();
+  setUrl("?r=" + t);
+  renderResult(t);
+}
+
+function mateHTML(code) {
+  const m = TYPES[code];
+  return `<span class="em">${m.emoji}</span><div><div class="nm">${m.name}</div><div class="mb">${code}</div></div>`;
+}
+
+function renderResult(code) {
+  const r = TYPES[code];
+  if (!r) return;
+  $("rEmoji").textContent = r.emoji;
+  $("rMbti").textContent = code;
+  $("rName").textContent = r.name;
+  $("rCatch").textContent = r.catch;
+  $("rTags").innerHTML = r.tags.map(t => `<span class="tag">${t}</span>`).join("");
+  $("rTraits").innerHTML = r.traits.map(t => `<li>${t}</li>`).join("");
+  $("rStrength").textContent = r.strength;
+  $("rCaution").textContent = r.caution;
+  $("rBuddy").innerHTML = mateHTML(r.buddy);
+  $("rClash").innerHTML = mateHTML(r.clash);
+  $("rRole").textContent = r.role;
+  document.title = `${r.name} (${code}) — 게임 개발자 유형 테스트`;
+  show("result");
+}
+
+function toast(msg) {
+  const t = $("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 1800);
+}
+
+async function share() {
+  const code = $("rMbti").textContent;
+  const r = TYPES[code];
+  const hasRealUrl = /^https?:/.test(location.href);
+  const url = hasRealUrl ? location.origin + location.pathname + "?r=" + code : "";
+  const text = `나의 게임 개발자 유형은 ${r.emoji} ${r.name}(${code})! 너는?`;
+  const data = url ? { title: "게임 개발자 유형 테스트", text, url } : { title: "게임 개발자 유형 테스트", text };
+  if (navigator.share) {
+    try { await navigator.share(data); return; } catch (e) { /* 취소/미지원 → 복사로 fallback */ }
+  }
+  const payload = url ? `${text}\n${url}` : text;
+  try {
+    await navigator.clipboard.writeText(payload);
+    toast(url ? "링크를 복사했어요" : "결과를 복사했어요");
+  } catch (e) {
+    prompt("아래 내용을 복사하세요", payload);
+  }
+}
+
+function restart() {
+  idx = 0; answers = [];
+  setUrl("");
+  document.title = "게임 개발자 유형 테스트";
+  show("intro");
+}
+
+/* ---------- Cat bubble FX ---------- */
+// 고양이 얼굴 SVG (검은 고양이 + 레드 포인트). 표정은 랜덤.
+const CAT_FACES = [
+  // 기본 (동그란 눈)
+  `<circle cx="22" cy="31" r="3" fill="#ffd166"/><circle cx="42" cy="31" r="3" fill="#ffd166"/>`,
+  // 웃는 눈
+  `<path d="M18 31q4-4 8 0M38 31q4-4 8 0" stroke="#ffd166" stroke-width="2.4" fill="none" stroke-linecap="round"/>`,
+  // 윙크
+  `<circle cx="22" cy="31" r="3" fill="#ffd166"/><path d="M38 31q4-3 8 0" stroke="#ffd166" stroke-width="2.4" fill="none" stroke-linecap="round"/>`,
+];
+function catSVG() {
+  const face = CAT_FACES[Math.floor(Math.random() * CAT_FACES.length)];
+  return `<svg viewBox="0 0 64 60" xmlns="http://www.w3.org/2000/svg">
+    <!-- 귀 -->
+    <path d="M12 26 L8 4 L26 16Z" fill="#1c1c20" stroke="#e8362e" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M52 26 L56 4 L38 16Z" fill="#1c1c20" stroke="#e8362e" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M13 22 L11 10 L22 17Z" fill="#e8362e" opacity=".8"/>
+    <path d="M51 22 L53 10 L42 17Z" fill="#e8362e" opacity=".8"/>
+    <!-- 얼굴 -->
+    <ellipse cx="32" cy="34" rx="24" ry="21" fill="#1c1c20" stroke="#e8362e" stroke-width="2"/>
+    ${face}
+    <!-- 코 + 입 -->
+    <path d="M29 39 L35 39 L32 43Z" fill="#e8362e"/>
+    <path d="M32 43 q-3 4 -6 1 M32 43 q3 4 6 1" stroke="#ff6b63" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+    <!-- 수염 -->
+    <path d="M6 36 L18 38 M6 42 L18 41 M58 36 L46 38 M58 42 L46 41" stroke="#9a9aa3" stroke-width="1.6" stroke-linecap="round"/>
+  </svg>`;
+}
+function catPop(x, y) {
+  const el = document.createElement("span");
+  el.className = "cat-bubble";
+  el.innerHTML = catSVG();
+  const ang = (-90 + (Math.random() * 50 - 25)) * Math.PI / 180; // 위쪽, 살짝 좌우
+  const dist = 70 + Math.random() * 40;
+  el.style.left = x + "px";
+  el.style.top = y + "px";
+  el.style.setProperty("--size", (40 + Math.random() * 10) + "px");
+  el.style.setProperty("--dx", (Math.cos(ang) * dist).toFixed(1) + "px");
+  el.style.setProperty("--dy", (Math.sin(ang) * dist).toFixed(1) + "px");
+  el.style.setProperty("--rot", ((Math.random() * 30) - 15).toFixed(0) + "deg");
+  el.style.setProperty("--dur", "900ms");
+  el.addEventListener("animationend", () => el.remove(), { once: true });
+  $("fx").appendChild(el);
+}
+// 버튼을 누를 때마다 고양이 한 마리 (터치 좌표 포함)
+document.addEventListener("pointerdown", (e) => {
+  if (!e.target.closest("button")) return;
+  catPop(e.clientX, e.clientY);
+}, { passive: true });
+
+$("startBtn").onclick = () => { idx = 0; answers = []; renderQuestion(); show("quiz"); };
+$("prevBtn").onclick = () => { if (idx > 0) { idx--; renderQuestion(); } };
+$("restartBtn").onclick = restart;
+$("againBtn").onclick = restart;
+$("shareBtn").onclick = share;
+
+// 공유 링크(?r=INTJ)로 들어온 경우 바로 결과 표시
+(function init() {
+  const p = new URLSearchParams(location.search).get("r");
+  if (p && TYPES[p.toUpperCase()]) renderResult(p.toUpperCase());
+})();
+</script>
+</body>
+</html>
